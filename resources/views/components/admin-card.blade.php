@@ -3,6 +3,6 @@
         <h2 class="font-bold text-xl mb-2">Заявка от {{ $report->created_at ? $report->created_at->format('d.m.Y') : 'Неизвестное время' }}</h2>
         <p><strong>Пользователь:</strong> {{ $report->user->name ?? 'Неизвестный пользователь' }}</p> 
         <p><strong>Тема:</strong> {{ $report-> theme }}</p>
-        <p><img src="{{ asset('images/'.$work->path_img) }}" alt="profile Pic" height="200" width="200">        </p>
+        <p><img src="{{ asset('image/'. $report->path_img) }}" alt="profile Pic" height="200" width="200">        </p>
     </div>
 </div>
