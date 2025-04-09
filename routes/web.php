@@ -16,7 +16,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/admin', [ReportController::class, 'adminIndex'])->name('admin.index');
 
-    Route::post('/reports/{id}', [ReportController::class, 'updateStatus']);
+    Route::post('/reports/{id}', [ReportController::class, 'updateStatus']) -> name('reports.statusUpdate');
     Route::put('/reports/{id}', [ReportController::class, 'update'])->name('reports.update');
 
     Route::get('/request', [ReportController::class, 'index'])->name('request.index'); 

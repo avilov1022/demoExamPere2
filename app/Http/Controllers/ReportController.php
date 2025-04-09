@@ -4,16 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Statue;
 use App\Models\Report;
+use App\Models\Section;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class ReportController extends Controller
-{   //private function isAdminByEmail($email)
-    //{
-    //    return Auth::check() && Auth::user()->email === $email;
-    //}
+{   
+    private function isAdminByEmail($email)
+    {
+        return Auth::check() && Auth::user()->email === $email;
+    }
     
   //  private function isAdmin()
   //  {
@@ -24,19 +26,19 @@ class ReportController extends Controller
     //    if (!$this->isAdmin()) {
     //        abort(403, 'Недостаточно полномочий для доступа к этой странице.');
     //    }
-    //if (!$this->isAdminByEmail('admin@example.com')) {
-    //   abort(403, 'Недостаточно полномочий для доступа к этой странице.');
-    //}
+    if (!$this->isAdminByEmail('admin@mail.com')) {
+       abort(403, 'Недостаточно полномочий для доступа к этой странице.');
+    }
         $reports = Report::paginate(10);
-        $statues = Statue::all();
+        $sections = Section::all();
 
-        return view('admin', compact('reports', 'statues'));
+        return view('admin', compact('reports', 'sections'));
     }
 
     public function updateStatus(Request $request, $id)
     {
         $report = Report::findOrFail($id);
-        $report->statues_id = $request->input('status_id');
+        $report->section_id = $request->input('section_id');
         $report->save();
 
         return response()->json(['success' => true]);
@@ -44,11 +46,11 @@ class ReportController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'statues_id' => 'required|exists:statues,id',
+            'section_id' => 'required|exists:section,id',
         ]);
 
         $report = Report::findOrFail($id);
-        $report->statues_id = $request->statues_id;
+        $report->statues_id = $request->section_id;
         $report->save();
 
         return redirect()->route('admin.index')->with('success', 'Статус обновлён успешно!');
@@ -65,29 +67,39 @@ class ReportController extends Controller
     public function create()
     {
         // $services = Service::all();
-        $statues = Statue::all();
+        $sections = Section::all();
 
-        return view('request', compact('statues')); //('services', 'statues')); 
+        return view('request', compact('sections'));
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            '' => 'required|string|max:255',
-            //   'service_id' => 'required|exists:services,id',
-        ]);
+        try{
 
 
+            $data = $request->validate([
+                'fullname' => 'required|string|max:255',
+                'path_img' => 'required|image|mimes:png,jpg,jpeg,gif|max:4096',
+                'theme' => 'required|string|max:255',
+                'section_id' => 'required|exists:sections,id',
+            ]);
 
-        Report::create([
-            '' => $data[''],
-            //'service_id' => $data['service_id'],
-            'statues_id' => 1,
-            'user_id' => Auth::id(),
-        ]);
-
-        Log::info('Report created successfully.');
-
-        return redirect('/')->with('message', 'Создание заявки успешно!');
+            $imageName = time() . '.' . $request->path_img->extension();
+            $request->path_img->storeAs('reports', $imageName, 'public');
+            $request->path_img->move(public_path('image'), $imageName);
+            
+            Report::create([
+                'fullname' => $data['fullname'],
+                'path_img' => $imageName,
+                'theme' => $data['theme'],
+                'section_id' => $data['section_id'],
+                'user_id' => Auth::id(),
+            ]);
+            
+            return redirect('/')->with('message', 'Создание заявки успешно!');
+        }catch( \Exception $e){
+            Log::error('Ошибка при создании отчета: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Произошла ошибка при создании заявки.');
+        }
     }
 }
