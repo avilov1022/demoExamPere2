@@ -10,9 +10,11 @@ class Report extends Model
     use HasFactory;
 
     protected $fillable = [
-        '',
-        'statues_id', 
-        'user_id',
+        'fullname',
+        'path_img', 
+        'theme',
+        'section_id',
+        'user_id'
     ];
 
     public function user()
@@ -20,9 +22,9 @@ class Report extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function statue() 
+    public function section() 
     {
-        return $this->belongsTo(Statue::class, 'statues_id'); 
-    }      
+        return $this->belongsTo(Section::class, 'section_id');
+    }
     
 }
